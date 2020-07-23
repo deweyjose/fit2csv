@@ -58,6 +58,7 @@ def convert_file(fitfile, headers, data):
         fields = m.fields
         mdata = {}
 
+        logging.debug("================================")
         for field in fields:
             if field.name in headers:
                 if field.name == 'timestamp':
@@ -70,6 +71,7 @@ def convert_file(fitfile, headers, data):
                     mdata[field.name] = field.value
             else:
                 logging.debug(f"{field.name} => {field.value}")
+        logging.debug("================================")
 
         if 'activity_type' in mdata:
             if 'timestamp' in mdata:
