@@ -7,6 +7,7 @@ import argparse
 import csv
 import logging
 import os
+from os.path import join
 
 import fitparse
 import pytz
@@ -18,16 +19,27 @@ CST = pytz.timezone('US/Eastern')
 def main(input_directory, output_file):
     logging.info(f"processing {input_directory}")
 
-    files = os.listdir(input_directory)
-    files.sort()
+    dirs = [dI for dI in os.listdir(input_directory) if os.path.isdir(join(input_directory,dI))]
+
+    dirs.sort()
+
     headers = set(['timestamp', 'heart_rate', 'activity_type', 'activity_type_last_timestamp'])
     data = []
-    fit_files = [file for file in files if file[-4:].lower() == '.fit']
 
-    for file in fit_files:
-        fitfile = fitparse.FitFile(os.path.join(input_directory, file), data_processor=fitparse.StandardUnitsDataProcessor())
-        logging.info(f"converting {file}")
-        convert_file(fitfile, headers, data)
+    for dir in dirs:
+        current_dir = join(input_directory,dir)
+        logging.info(f"processing directory {current_dir}")
+
+        files = os.listdir(current_dir)
+        files.sort()
+
+        fit_files = [file for file in files if file[-4:].lower() == '.fit']
+
+        for file in fit_files:
+            current_file =join(current_dir, file)
+            fitfile = fitparse.FitFile(current_file, data_processor=fitparse.StandardUnitsDataProcessor())
+            logging.info(f"converting {current_file}")
+            convert_file(fitfile, headers, data)
 
     write_to_csv(headers, data, output_file)
     logging.info('finished conversions')
